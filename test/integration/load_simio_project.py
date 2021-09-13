@@ -12,4 +12,7 @@ if __name__ == '__main__':
                                        model_name=env_model_name)
     for table_name, table_df in output_tables.items():
         print(os.path.join(env_export_dir, f'{table_name}.csv'))
-        table_df.to_csv(os.path.join(env_export_dir, f'{table_name}.csv'), index=False)
+        try:
+            table_df.to_csv(os.path.join(env_export_dir, f'{table_name}.csv'), index=False)
+        except AttributeError:
+            print("This was empty")
