@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setuptools.setup(
     name="simio_lisa",
-    version="0.0.3",
+    version="0.1.0",
     author="Jose Mielgo",
     author_email="mielgosez@gmail.com",
     description="Beautiful Simio",
