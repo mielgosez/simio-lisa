@@ -1,7 +1,4 @@
 import os
-import warnings
-from typing import Union
-import numpy as np
 import pandas as pd
 from utils import *
 
@@ -189,7 +186,7 @@ def get_column_names(row_doms):
                                                   tag_name='StateValue',
                                                   attribute_name='Name'))
     column_names = set(column_names)
-    return  column_names
+    return column_names
 
 
 def load_single_output_table(table_path: str) -> Union[pd.DataFrame, None]:
@@ -234,9 +231,9 @@ def load_output_tables(project_path: str,
                                                model_name=model_name)
     output_file_list = get_output_table_names(output_table_path=output_tables_path)
     experiment_dictionary = dict()
-    for table_name in output_file_list:
-        table_path = os.path.join(output_tables_path, table_name)
-        experiment_dictionary[table_name.split('.')[0]] = load_single_output_table(table_path)
+    for _table_name in output_file_list:
+        table_path = os.path.join(output_tables_path, _table_name)
+        experiment_dictionary[_table_name.split('.')[0]] = load_single_output_table(table_path)
     return experiment_dictionary
 
 
