@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setuptools.setup(
     name="simio_lisa",
-    version="0.0.1",
+    version="0.0.2",
     author="Jose Mielgo",
     author_email="mielgosez@gmail.com",
     description="Beautiful Simio",
@@ -24,6 +24,5 @@ setuptools.setup(
     packages=setuptools.find_packages(where="src"),
     python_requires=">=3.6",
     install_requires=["pandas",
-                      "xml",
                       "numpy"]
 )
