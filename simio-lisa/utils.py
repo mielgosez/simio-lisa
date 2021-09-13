@@ -1,4 +1,8 @@
+import warnings
 from xml.dom import minidom
+from typing import Union
+
+import numpy as np
 
 
 def get_project_folder_name(project_file_name: str) -> str:
@@ -13,24 +17,30 @@ def get_project_folder_name(project_file_name: str) -> str:
 
 
 def extract_list_from_dom(dom_object: minidom.Document,
-                          tag_name: str,
+                          tag_name: Union[str, None] = None,
                           attribute_name: str = None,
                           prefix_str: str = str(),
                           suffix_str: str = str()) -> list:
     """
     Extract a list of DOM or strings from a dom, filtering by tag name.
     :param dom_object: DOM Parent.
-    :param tag_name: Tag to filter. Compulsory because DOM is primarily filtered by this.
+    :param tag_name: Tag to filter. Compulsory because DOM is primarily filtered by this UNLESS it has already filtered.
     :param attribute_name: If you want to get a list of sub-doms, set this parameter to None.
     :param prefix_str: If you want to get a String, this add a prefix string fragment.
     :param suffix_str: If you want to get a String, this add a suffix string fragment.
     :return: List of DOMs or strings.
     """
-    dom_from_tag = dom_object.getElementsByTagName(tag_name)
+    if tag_name is None:
+        dom_from_tag = dom_object
+    else:
+        dom_from_tag = dom_object.getElementsByTagName(tag_name)
     if attribute_name is None:
         list_results = [item for item in dom_from_tag]
     else:
-        list_results = [prefix_str+item.attributes[attribute_name].value+suffix_str for item in dom_from_tag]
+        try:
+            list_results = [prefix_str+item.attributes[attribute_name].value+suffix_str for item in dom_from_tag]
+        except AttributeError:
+            list_results = [np.NaN]
     return list_results
 
 
@@ -46,7 +56,8 @@ def filter_dom_by_attribute(list_of_doms: list,
     """
     list_models = [item for item in list_of_doms if item.attributes[attribute_name].value == attribute_value]
     if len(list_models) == 0:
-        raise ValueError(f'No {attribute_name} with value {attribute_value} has been found.')
+        warnings.warn(f'No {attribute_name} with value {attribute_value} has been found.')
+        return [np.NaN]
     else:
         return list_models
 
