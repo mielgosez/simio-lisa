@@ -1,6 +1,6 @@
 import os
 import pandas as pd
-from utils import *
+from simio_lisa.utils import *
 
 
 def check_results_dict_dimensions(result_dict: dict):
