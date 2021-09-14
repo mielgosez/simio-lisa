@@ -18,10 +18,11 @@ def check_results_dict_dimensions(result_dict: dict):
         raise ValueError(f'Result dictionary has unbalanced values: {"; ".join(error_message)}')
 
 
-def get_single_response_value(dom_response_list: list):
+def get_single_response_value(dom_response_list: list, agg_function):
     """
     Get value of a single scenario's response.
     :param dom_response_list: Single response provided as a list of one term.
+    :param agg_function: Function to aggregate multiple responses.
     :return: Value of such observation.
     """
     response_list = extract_list_from_dom(dom_object=dom_response_list[0],
@@ -30,36 +31,42 @@ def get_single_response_value(dom_response_list: list):
     if len(response_list) == 0:
         response_value = np.NaN
     else:
-        response_value = response_list[0]
+        try:
+            response_value = agg_function([float(item) for item in response_list])
+        except TypeError:
+            response_value = np.NaN
     return response_value
 
 
 def load_scenario_results(result_dict: dict,
                           dom_scenario_list: minidom.Document,
                           response_list: set,
-                          scenario_name: str):
+                          scenario_name: str,
+                          agg_function=np.mean):
     """
     Load scenario response and value to result_dict. Scenario name is set outside this function.
     :param scenario_name:
     :param result_dict: Dictionary of results to be updated.
     :param dom_scenario_list: List of.
     :param response_list: Set of response names to iterate over.
+    :param agg_function: Aggregate responses.
     :return: Nothing. Result dictionary is updated
     """
     for resp in response_list:
         response = filter_dom_by_attribute(list_of_doms=dom_scenario_list,
                                            attribute_name='Response',
                                            attribute_value=resp)
-        value_response = get_single_row_value(dom_row_list=response)
+        value_response = get_single_response_value(dom_response_list=response, agg_function=agg_function)
         result_dict['scenario'].append(scenario_name)
         result_dict['response'].append(resp)
         result_dict['value'].append(value_response)
 
 
-def load_single_experiment_result(experiment_path: str) -> Union[pd.DataFrame, None]:
+def load_single_experiment_result(experiment_path: str, agg_function=np.mean) -> Union[pd.DataFrame, None]:
     """
     Load results of single experiment
     :param experiment_path:
+    :param agg_function:
     :return: DataFrame with result of experiment.
     """
     try:
@@ -82,7 +89,8 @@ def load_single_experiment_result(experiment_path: str) -> Union[pd.DataFrame, N
         load_scenario_results(result_dict=results_dict,
                               dom_scenario_list=scenario_list,
                               response_list=response_names,
-                              scenario_name=sce)
+                              scenario_name=sce,
+                              agg_function=agg_function)
         check_results_dict_dimensions(results_dict)
     results_df = pd.DataFrame(results_dict)
     results_df = results_df.pivot(index='scenario', columns='response', values='value')
@@ -91,22 +99,24 @@ def load_single_experiment_result(experiment_path: str) -> Union[pd.DataFrame, N
 
 def load_experiment_results(project_path: str,
                             project_filename: str,
-                            model_name: str) -> dict:
+                            model_name: str,
+                            agg_function=np.mean) -> dict:
     """
     Load all experiment results related to a Simio model.
     :param project_path:
     :param project_filename:
     :param model_name:
+    :param agg_function:
     :return: Dictionary whose keys are experiment name and value is a data frame (or None).
     """
     file_path = os.path.join(project_path, project_filename)
     experiment_list = get_experiment_names(path=file_path, model_name=model_name)
     folder_name = get_project_folder_name(project_file_name=project_filename)
-    experiment_dictionary = {'experiment_name': [], 'results': []}
+    experiment_dictionary = {}
     for exp_name in experiment_list:
         experiments_path = os.path.join(project_path, folder_name, 'Results', model_name, exp_name)
-        experiment_dictionary['experiment_name'].append(exp_name)
-        experiment_dictionary['results'].append(load_single_experiment_result(experiments_path))
+        experiment_dictionary[exp_name] = load_single_experiment_result(experiment_path=experiments_path,
+                                                                        agg_function=agg_function)
     return experiment_dictionary
 
 
@@ -241,15 +251,14 @@ if __name__ == '__main__':
     env_project_path = os.environ['SIMIOPROJECTPATH']
     env_project_file = os.environ['SIMIOPROJECTNAME']
     env_model_name = os.environ['MODELNAME']
-    env_export_dir = os.environ['EXPORTDIR']
-    output_tables = load_output_tables(project_path=env_project_path,
-                                       project_filename=env_project_file,
-                                       model_name=env_model_name)
-    for table_name, table_df in output_tables.items():
-        print(os.path.join(env_export_dir, f'{table_name}.csv'))
-        table_df.to_csv(os.path.join(env_export_dir, f'{table_name}.csv'), index=False)
-    """
+    # env_export_dir = os.environ['EXPORTDIR']
+    # output_tables = load_output_tables(project_path=env_project_path,
+    #                                   project_filename=env_project_file,
+    #                                   model_name=env_model_name)
+    # for table_name, table_df in output_tables.items():
+    #    print(os.path.join(env_export_dir, f'{table_name}.csv'))
+    #    table_df.to_csv(os.path.join(env_export_dir, f'{table_name}.csv'), index=False)
     experiments_df = load_experiment_results(project_path=env_project_path,
                                              project_filename=env_project_file,
-                                             model_name=env_model_name)
-    """
+                                             model_name=env_model_name,
+                                             agg_function=np.mean)
