@@ -7,6 +7,7 @@ if __name__ == '__main__':
     env_project_file = os.environ['SIMIOPROJECTNAME']
     env_model_name = os.environ['MODELNAME']
     env_export_dir = os.environ['EXPORTDIR']
+    os.mkdir(env_export_dir)
     output_tables = load_output_tables(project_path=env_project_path,
                                        project_filename=env_project_file,
                                        model_name=env_model_name)
