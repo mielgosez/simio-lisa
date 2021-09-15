@@ -138,6 +138,26 @@ def get_experiment_names(path: str,
     return experiment_list
 
 
+def get_model_metadata(path_to_project: str,
+                       model_file_name: str,
+                       model_name: str):
+    """
+
+    :param path_to_project:
+    :param model_file_name:
+    :param model_name
+    :return:
+    """
+    file_name = model_file_name.split('.')[0]
+    path = os.path.join(path_to_project,
+                        '.'.join([file_name, 'Files']),
+                        'Models',
+                        model_name)
+    path_xml = [item for item in os.listdir(path) if '.xml' in item][0]
+    project_xml = minidom.parse(os.path.join(path, path_xml))
+    return project_xml
+
+
 def get_output_table_names(output_table_path: str):
     """
         List of output table names names.
@@ -155,109 +175,14 @@ def get_model_tables_path(project_path, model_name, project_filename):
     return os.path.join(project_path, folder_name, 'Models', model_name, 'TableData')
 
 
-def get_single_row_value(dom_row_list: list):
-    """
-    Get value of a single scenario's response.
-    :param dom_row_list: Single row provided as a list of one term.
-    :return: Value of such observation.
-    """
-    row_list = extract_list_from_dom(dom_object=dom_row_list,
-                                     attribute_name='Value')
-    if len(row_list) == 0:
-        response_value = np.NaN
-    else:
-        response_value = row_list[0]
-    return response_value
-
-
-def add_row_to_table(result_dict: dict,
-                     dom_row: minidom.Document,
-                     column_names: set):
-    """
-    Load row to table
-    :param result_dict: Dictionary of results to be updated.
-    :param dom_row: List of.
-    :param column_names: Set of response names to iterate over.
-    :return: Nothing. Result dictionary is updated
-    """
-    row = dom_row.getElementsByTagName('StateValue')
-    for resp in column_names:
-        response = filter_dom_by_attribute(list_of_doms=row,
-                                           attribute_name='Name',
-                                           attribute_value=resp)
-        value_response = get_single_row_value(dom_row_list=response)
-        result_dict[resp].append(value_response)
-
-
-def get_column_names(row_doms):
-    column_names = list()
-    for i in row_doms:
-        column_names.extend(extract_list_from_dom(dom_object=i,
-                                                  tag_name='StateValue',
-                                                  attribute_name='Name'))
-    column_names = set(column_names)
-    return column_names
-
-
-def load_single_output_table(table_path: str) -> Union[pd.DataFrame, None]:
-    """
-    Load results of single experiment
-    :param table_path:
-    :return: DataFrame with result of experiment.
-    """
-    try:
-        project_xml = minidom.parse(table_path)
-    except FileNotFoundError:
-        warnings.warn(f'Table {table_path} has not been ran yet.')
-        return None
-    row_doms = extract_list_from_dom(dom_object=project_xml,
-                                     tag_name='Row')
-    if len(row_doms) == 0:
-        warnings.warn(f'Table {table_path} is empty')
-        return None
-    column_names = get_column_names(row_doms=row_doms)
-    results_dict = {col: [] for col in column_names}
-    for row in row_doms:
-        add_row_to_table(result_dict=results_dict,
-                         dom_row=row,
-                         column_names=column_names)
-        check_results_dict_dimensions(results_dict)
-    results_df = pd.DataFrame(results_dict)
-    return results_df
-
-
-def load_output_tables(project_path: str,
-                       project_filename: str,
-                       model_name: str):
-    """
-        Load all experiment results related to a Simio model.
-        :param project_path:
-        :param project_filename:
-        :param model_name:
-        :return: Dictionary whose keys are experiment name and value is a data frame (or None).
-        """
-    output_tables_path = get_model_tables_path(project_path=project_path,
-                                               project_filename=project_filename,
-                                               model_name=model_name)
-    output_file_list = get_output_table_names(output_table_path=output_tables_path)
-    experiment_dictionary = dict()
-    for _table_name in output_file_list:
-        table_path = os.path.join(output_tables_path, _table_name)
-        experiment_dictionary[_table_name.split('.')[0]] = load_single_output_table(table_path)
-    return experiment_dictionary
-
-
 if __name__ == '__main__':
     env_project_path = os.environ['SIMIOPROJECTPATH']
     env_project_file = os.environ['SIMIOPROJECTNAME']
     env_model_name = os.environ['MODELNAME']
-    # env_export_dir = os.environ['EXPORTDIR']
-    # output_tables = load_output_tables(project_path=env_project_path,
-    #                                   project_filename=env_project_file,
-    #                                   model_name=env_model_name)
-    # for table_name, table_df in output_tables.items():
-    #    print(os.path.join(env_export_dir, f'{table_name}.csv'))
-    #    table_df.to_csv(os.path.join(env_export_dir, f'{table_name}.csv'), index=False)
+    get_model_metadata(path_to_project=env_project_path,
+                       model_file_name=env_project_file,
+                       model_name=env_model_name)
+    env_export_dir = os.environ['EXPORTDIR']
     experiments_df = load_experiment_results(project_path=env_project_path,
                                              project_filename=env_project_file,
                                              model_name=env_model_name,
