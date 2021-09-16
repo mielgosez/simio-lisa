@@ -34,7 +34,6 @@ class SimioPlotter:
         self._y_axis = kwargs.get('y_axis', None)
         self._time_axis = kwargs.get('time_axis', None)
         self._objects_dict = kwargs.get('objects_dict', None)
-        object_groups_dict = kwargs.get('objects_dict', None)
 
         logging.getLogger().setLevel(logger_level)
 
@@ -44,8 +43,7 @@ class SimioPlotter:
  #   Convert input data
     def plot(self, tables, kind):
         """
-        Import dim_object_properties from data_model and creates a table with all the objects containing all their properties: location, processing times, loading/unloading times, ...
-        The object type is also added importing dim_objects.
+
         """
         if kind == 'time_series_columns':
             simio_ts_plotter = SimioTimeSeries(
@@ -166,13 +164,13 @@ class SimioTimeSeries(SimioPlotter):
         :param project_path:
         :param model_name:
         """
-        SimioPlotter.__init__(self,
-                              project_path,
-                              project_name,
-                              model_name,
-                              path_output_tables,
-                              logging.INFO,
-                              **kwargs)
+        super().__init__(self,
+                        project_path,
+                        project_name,
+                        model_name,
+                        path_output_tables,
+                        logging.INFO,
+                        **kwargs)
 
     def plot_columns(self, table: str):
         """
@@ -361,3 +359,6 @@ if __name__ == '__main__':
     simio_plotter_class._time_axis = 'DateTime'
     simio_plotter_class.plot(tables='OutputObjectUtilization', kind='bars_time_series_object_utilization')
 
+    # Missing time in system : fig = px.box(df, x="day", y="total_bill", color="smoker", notched=True)
+    # Missing AllProcesses each cube (PowerBI table) fig = px.bar(df, x="medal", y="count", color="nation",
+    #              pattern_shape="nation", pattern_shape_sequence=[".", "x", "+"])
