@@ -32,3 +32,20 @@ if __name__ == '__main__':
         except AttributeError:
             print("This was empty")
 ```
+
+## Exporting Experiments
+
+```
+import os
+from simio_lisa.load_simio_project import load_experiment_results
+
+
+if __name__ == '__main__':
+    env_project_path = "path to project"
+    env_project_file = "name of .simproj file"
+    env_model_name = "name of the model containing the output file (usually Model)"
+    experiments_df = load_experiment_results(project_path=env_project_path,
+                                             project_filename=env_project_file,
+                                             model_name=env_model_name,
+                                             agg_function=np.mean)
+```

@@ -1,8 +1,18 @@
+import datetime
 import warnings
 from xml.dom import minidom
 from typing import Union
 
 import numpy as np
+
+
+simio_data_types = {
+    'StringState': str,
+    'DateTimeState': datetime.datetime,
+    'DiscreteState': float,
+    'BooleanState': bool,
+    'ElementReferenceState': str,
+    'IntegerState': int}
 
 
 def get_project_folder_name(project_file_name: str) -> str:
