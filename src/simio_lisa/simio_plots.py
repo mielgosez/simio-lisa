@@ -384,56 +384,6 @@ if __name__ == '__main__':
                                   model_file_name=project_name,
                                   model_name=model_name)
     output_tables_.load_output_tables()
-
-    print('Time Series plots')
-    y_axis_ = 'Utilization'
-    time_axis_ = 'DateTime'
-    simio_time_series_plotter = SimioTimeSeries(
-        output_tables=output_tables_.tables,
-        logger_level=logging.INFO,
-        y_axis=y_axis_,
-        time_axis=time_axis_)
-
-    simio_time_series_plotter.plot(tables='OutputObjectUtilization', kind='time_series_columns')
-
-    simio_time_series_plotter.time_axis = 'StatusDate'
-    simio_time_series_plotter.y_axis = 'Count'
-    simio_time_series_plotter.plot(tables=['OutputStatus5A', 'OutputStatus5B', 'OutputStatus6'],
-                                   kind='time_series_tables')
-    #
-    print('Object Utilization plots')
-    x_axis_ = 'ObjectId'
-    y_axis_ = 'Utilization'
-    time_axis_ = 'DateTime'
-    object_groups_dict_ = {'Shuttles': ['DropOffShuttle[1]', 'PickUpShuttle[1]'],
-                           'Retorts': ['Retort1', 'Retort2', 'Retort3', 'Retort4',
-                                       'Retort5', 'Retort6', 'Retort7', 'Retort8',
-                                       'Retort9', 'Retort10']
-                           }
-    simio_obj_util_plotter = SimioBarPie(
-        output_tables=output_tables_.tables,
-        logger_level=logging.INFO,
-        x_axis=x_axis_,
-        y_axis=y_axis_,
-        time_axis=time_axis_,
-        objects_dict=object_groups_dict_)
-
-    simio_obj_util_plotter.plot(tables='OutputObjectUtilization', kind='bars_plot')
-    simio_obj_util_plotter.plot(tables='OutputObjectUtilization', kind='pie_plot')
-    simio_obj_util_plotter.plot(tables='OutputObjectUtilization', kind='bars_time_series_plot')
-
-    print('TIS plot')
-    x_axis_ = 'ProcessName'
-    y_axis_ = 'ProductTimeInSystem'
-    simio_tis_plotter = SimioBox(
-        output_tables=output_tables_.tables,
-        logger_level=logging.INFO,
-        y_axis=y_axis_,
-        x_axis=x_axis_)
-
-    simio_tis_plotter.plot(tables='OutputProductDeparture', kind='box_plot')
-
-    print('Plot Object Processing on stacked bars')
     print('Create Object Processing Table')
     output_tables_new_ = create_object_processing_table(output_tables_)
     x_axis_ = 'object_id'
