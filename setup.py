@@ -6,8 +6,8 @@ with open("README.md", "r", encoding="utf-8") as fh:
 setuptools.setup(
     name="simio_lisa",
     version="1.0.0",
-    author="Jose Mielgo",
-    author_email="mielgosez@gmail.com",
+    author=["Jose Mielgo", "Alessandro Seri"],
+    author_email=["mielgosez@gmail.com", "seri.alessandro@gmail.com"],
     description="Beautiful Simio",
     long_description=long_description,
     long_description_content_type="text/markdown",
@@ -24,5 +24,6 @@ setuptools.setup(
     packages=setuptools.find_packages(where="src"),
     python_requires=">=3.6",
     install_requires=["pandas",
-                      "numpy"]
+                      "numpy",
+                      "plotly"]
 )

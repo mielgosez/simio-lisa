@@ -49,3 +49,105 @@ if __name__ == '__main__':
                                              model_name=env_model_name,
                                              agg_function=np.mean)
 ```
+
+## Plotting Data from tables
+Different classes are defined for different kinds of plot. Their parent class is SimioPlotter, and it wants as an input a dictionary with all the tables (e.g. the attribute tables of an object of the class OutputTables).
+Other possible inputs can be x_axis, y_axis, time_axis, legend_col, object_groups_dict.
+Each child class must cointain a plot() method.
+The child classes are: SimioTimeSeries (plot time series), SimioBarPie (bar plots and pie charts), SimioBox (box plot), SimioStackedBars (stacked bars plot).
+
+Examples for the
+### Initialize OutputTables class object
+
+    output_tables = OutputTables(path_to_project,
+                                 model_file_name,
+                                 model_name)
+    output_tables.load_output_tables()
+
+### Plot time series comparing different columns of the same table
+
+    y_axis = 'Utilization'
+    time_axis = 'DateTime'
+    simio_time_series_plotter = SimioTimeSeries(
+                      output_tables=output_tables.tables,
+                      logger_level = logging.INFO,
+                      y_axis= y_axis,
+                      time_axis=time_axis)
+
+    simio_time_series_plotter.plot(tables='OutputObjectUtilization', kind='time_series_columns')
+
+### Plot time series comparing same column from different tables (name of tables as legend)
+
+    y_axis = 'Count'
+    time_axis = 'StatusDate'
+    simio_time_series_plotter = SimioTimeSeries(
+                      output_tables=output_tables.tables,
+                      logger_level = logging.INFO,
+                      y_axis= y_axis,
+                      time_axis=time_axis)
+
+    simio_time_series_plotter.plot(tables=['OutputStatus5A', 'OutputStatus5B', 'OutputStatus6'], kind='time_series_tables')
+
+### Plot bars or pie charts, distinguishing plots via object_groups_dict dictionary
+
+    x_axis = 'ObjectId'
+    y_axis = 'Utilization'
+    object_groups_dict = {'Shuttles': ['DropOffShuttle[1]', 'PickUpShuttle[1]'],
+                          'Retorts': ['Retort1', 'Retort2', 'Retort3', 'Retort4',
+                                      'Retort5', 'Retort6', 'Retort7', 'Retort8',
+                                      'Retort9', 'Retort10']
+                          }
+    simio_obj_util_plotter = SimioBarPie(
+                      output_tables=output_tables.tables,
+                      logger_level = logging.INFO,
+                      x_axis = x_axis,
+                      y_axis = y_axis,
+                      objects_dict = object_groups_dict)
+
+    simio_obj_util_plotter.plot(tables='OutputObjectUtilization', kind='bars_plot')
+    simio_obj_util_plotter.plot(tables='OutputObjectUtilization', kind='pie_plot')
+
+### Plot bars along time, distinguishing plots via object_groups_dict dictionary (each key should contain all the objects to be compared together)
+
+    x_axis = 'ObjectId'
+    y_axis = 'Utilization'
+    time_axis = 'DateTime'
+    object_groups_dict = {'Shuttles': ['DropOffShuttle[1]', 'PickUpShuttle[1]'],
+                          'Retorts': ['Retort1', 'Retort2', 'Retort3', 'Retort4',
+                                      'Retort5', 'Retort6', 'Retort7', 'Retort8',
+                                      'Retort9', 'Retort10']
+                          }
+    simio_obj_util_plotter = SimioBarPie(
+                      output_tables=output_tables.tables,
+                      logger_level = logging.INFO,
+                      x_axis = x_axis,
+                      y_axis = y_axis,
+                      time_axis = time_axis,
+                      objects_dict = object_groups_dict)
+
+    simio_obj_util_plotter.plot(tables='OutputObjectUtilization', kind='bars_time_series_plot')
+
+### Box plot
+
+    x_axis = 'ProcessName'
+    y_axis = 'ProductTimeInSystem'
+    simio_tis_plotter = SimioBox(
+        output_tables=output_tables.tables,
+        logger_level=logging.INFO,
+        y_axis=y_axis,
+        x_axis=x_axis)
+
+    simio_tis_plotter.plot(tables='OutputProductDeparture', kind='box_plot')
+
+### Plot stacked bars, using as a legend the column legend_col
+
+    x_axis = 'ObjectID'
+    y_axis = 'Duration'
+    legend_col = 'OperationID'
+    simio_object_processing_plotter = SimioStackedBars(
+                      output_tables=output_tables.tables,
+                      logger_level = logging.INFO,
+                      x_axis = x_axis,
+                      y_axis = y_axis,
+                      legend_col = legend_col)
+    simio_object_processing_plotter.plot(tables='ObjectProcessingTable', kind='stacked_bars')
