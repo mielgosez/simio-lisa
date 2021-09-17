@@ -1,23 +1,17 @@
-from simio_lisa.load_simio_project import *
 from simio_lisa.output_tables import *
 import logging
-import copy
 import pandas as pd
-import numpy as np
-import os.path
 import os
-import datetime
-import matplotlib.pyplot as plt
-import runpy
 import plotly.express as px
 from plotly.offline import plot
 import time
 from abc import ABC, abstractmethod
 
+
 class SimioPlotter(ABC):
     def __init__(self,
                  output_tables,
-                 logger_level: str = logging.INFO,
+                 logger_level: int = logging.INFO,
                  **kwargs):
         """
         Parent class.
@@ -43,7 +37,6 @@ class SimioPlotter(ABC):
         Force all subclasses to have a plot method
         """
         pass
-
 
     @property
     def tables(self):
@@ -93,23 +86,25 @@ class SimioPlotter(ABC):
     def legend_col(self, new_value):
         self._legend_col = new_value
 
+
 class SimioTimeSeries(SimioPlotter):
     def __init__(self,
                  output_tables,
-                 logger_level: str = logging.INFO,
+                 logger_level: int = logging.INFO,
                  **kwargs):
         """
         Class child of SimioPlotter to plot time series. Necessary in kwargs: time_axis and y_axis.
         When using plot_columns (plot_tables) y_axis (tables) can be a list.
         """
         SimioPlotter.__init__(self,
-                        output_tables,
-                        logger_level,
-                        **kwargs)
+                              output_tables,
+                              logger_level,
+                              **kwargs)
 
     def plot_columns(self, table: str):
         """
-        Plot TimeSeries comparing different columns (y_Axis should be a list of columns, only one table should be provided)
+        Plot TimeSeries comparing different columns (y_Axis should be a list of columns,
+        only one table should be provided)
         """
         input_data = self.tables[table]
         time_axis = self.time_axis
@@ -122,10 +117,7 @@ class SimioTimeSeries(SimioPlotter):
     def plot_tables(self, tables):
         """
         Plot TimeSeries comparing different tables (time_axis and y_axis should have the same name in all the tables)
-        :param all_tables_attribute:
         :param tables:
-        :param time_axis:
-        :param y_axis:
         :return:
         """
         if type(tables) is str:
@@ -149,7 +141,7 @@ class SimioTimeSeries(SimioPlotter):
         if kind == 'time_series_columns':
             fig = self.plot_columns(table=tables)
             plot(fig)
-        elif kind== 'time_series_tables':
+        elif kind == 'time_series_tables':
             fig = self.plot_tables(tables=tables)
             plot(fig)
         else:
@@ -159,10 +151,11 @@ class SimioTimeSeries(SimioPlotter):
 class SimioBarPie(SimioPlotter):
     def __init__(self,
                  output_tables,
-                 logger_level: str = logging.INFO,
+                 logger_level: int = logging.INFO,
                  **kwargs):
         """
-        Class child of SimioPlotter to plot bar plots or pie charts. Necessary in kwargs: x_axis, y_axis and objects_dict (time_axis necessary only for method plot_bars_time_series)
+        Class child of SimioPlotter to plot bar plots or pie charts. Necessary in kwargs: x_axis, y_axis and
+        objects_dict (time_axis necessary only for method plot_bars_time_series)
         :param objects_dict: dictionary grouping the objects to compare
         """
         SimioPlotter.__init__(self,
@@ -184,7 +177,7 @@ class SimioBarPie(SimioPlotter):
         y_axis = self.y_axis
         x_axis = self.x_axis
         object_groups_dict = self.objects_dict
-        input_data[y_axis] = input_data[y_axis].astype(float) #otherwise the column is lost when grouping
+        input_data[y_axis] = input_data[y_axis].astype(float)  # otherwise the column is lost when grouping
 
         f = {}
         for k in object_groups_dict.keys():
@@ -193,6 +186,7 @@ class SimioBarPie(SimioPlotter):
             fig = px.bar(input_data_plt, x=x_axis, y=y_axis, barmode="group")
             f[k] = fig
         return f
+
     def plot_pie(self, tables: str):
 
         if type(tables) is str:
@@ -207,16 +201,17 @@ class SimioBarPie(SimioPlotter):
         y_axis = self.y_axis
         x_axis = self.x_axis
         object_groups_dict = self.objects_dict
-        input_data[y_axis] = input_data[y_axis].astype(float) #otherwise the column is lost when grouping
+        input_data[y_axis] = input_data[y_axis].astype(float)  # otherwise the column is lost when grouping
 
         f = {}
         for k in object_groups_dict.keys():
             input_data_plt = input_data[input_data[x_axis].isin(object_groups_dict[k])].copy(deep=True)
             input_data_plt = input_data_plt.groupby(by=x_axis, as_index=False).mean()
             fig = px.pie(input_data_plt, values=y_axis, names=x_axis,
-                          title=x_axis + ' utilization quantified in terms of ' + y_axis + ', group ' + k)
+                         title=x_axis + ' utilization quantified in terms of ' + y_axis + ', group ' + k)
             f[k] = fig
         return f
+
     def plot_bars_time_series(self, tables: str):
         if type(tables) is str:
             input_data = self.tables[tables]
@@ -232,7 +227,7 @@ class SimioBarPie(SimioPlotter):
         time_axis = self.time_axis
         object_groups_dict = self.objects_dict
         input_data[time_axis] = input_data[time_axis].astype(str)
-        input_data[y_axis] = input_data[y_axis].astype(float) #otherwise the column is lost when grouping
+        input_data[y_axis] = input_data[y_axis].astype(float)  # otherwise the column is lost when grouping
 
         f = {}
         for k in object_groups_dict.keys():
@@ -243,17 +238,17 @@ class SimioBarPie(SimioPlotter):
 
     def plot(self, tables, kind):
         if kind == 'bars_plot':
-            fig = self.plot_bars(tables = tables)
+            fig = self.plot_bars(tables=tables)
             for k in fig.keys():
                 plot(fig[k])
                 time.sleep(.5)
         elif kind == 'pie_plot':
-            fig = self.plot_pie(tables = tables)
+            fig = self.plot_pie(tables=tables)
             for k in fig.keys():
                 plot(fig[k])
                 time.sleep(.5)
         elif kind == 'bars_time_series_plot':
-            fig = self.plot_bars_time_series(tables = tables)
+            fig = self.plot_bars_time_series(tables=tables)
             for k in fig.keys():
                 plot(fig[k])
                 time.sleep(.5)
@@ -264,7 +259,7 @@ class SimioBarPie(SimioPlotter):
 class SimioBox(SimioPlotter):
     def __init__(self,
                  output_tables,
-                 logger_level: str = logging.INFO,
+                 logger_level: int = logging.INFO,
                  **kwargs):
         """
 
@@ -274,9 +269,9 @@ class SimioBox(SimioPlotter):
         :param model_name:
         """
         SimioPlotter.__init__(self,
-                        output_tables,
-                        logger_level,
-                        **kwargs)
+                              output_tables,
+                              logger_level,
+                              **kwargs)
 
     def plot_box(self, tables):
         """
@@ -303,18 +298,19 @@ class SimioBox(SimioPlotter):
         else:
             raise ValueError(f'Kind {kind} not defined')
 
+
 class SimioStackedBars(SimioPlotter):
     def __init__(self,
                  output_tables,
-                 logger_level: str = logging.INFO,
+                 logger_level: int = logging.INFO,
                  **kwargs):
         """
         Class child of SimioPlotter to plot stacked bars. Necessary in kwargs: x_axis, y_axis and legend_col.
         """
         SimioPlotter.__init__(self,
-                        output_tables,
-                        logger_level,
-                        **kwargs)
+                              output_tables,
+                              logger_level,
+                              **kwargs)
 
     def plot_stacked_bars(self, tables):
         if type(tables) is str:
@@ -339,27 +335,29 @@ class SimioStackedBars(SimioPlotter):
         else:
             raise ValueError(f'Kind {kind} not defined')
 
+
 def create_object_processing_table(tables):
     """
-    Create a table with all the processes 'operation' happening to each entity 'object_id' and their durations extracted from 'start' and 'stop' columns.
+    Create a table with all the processes 'operation' happening to each entity 'object_id' and their durations extracted
+     from 'start' and 'stop' columns.
     The processes come from two different tables defined in "operation1""table" and "operation2""table"
     :param tables: DICT
     :return: tables DICT (with the new table added with name "ObjectProcessingTable"
     """
     obj_processing_metadata = {'operation1': {'table': 'OutputLoadingUnloadingTimes',
-                                             'columns':
-                                                 {'duration': {'start': 'OperationBegins',
-                                                               'stop': 'OperationFinish'},
-                                                'operation': 'OperationType',
-                                                'object_id': 'CubeName'}
-                                             },
-                              'operation2': {'table': 'OutputPalletProcessing',
-                                             'columns':
-                                                 {'duration': {'start': 'ProcessingStartTime',
-                                                               'stop': 'ProcessingEndTime'},
-                                                  'operation': 'RetortId',
-                                                  'object_id': 'MaterialName'}
-                                             }}
+                                              'columns':
+                                                  {'duration': {'start': 'OperationBegins',
+                                                                'stop': 'OperationFinish'},
+                                                   'operation': 'OperationType',
+                                                   'object_id': 'CubeName'}
+                                              },
+                               'operation2': {'table': 'OutputPalletProcessing',
+                                              'columns':
+                                                  {'duration': {'start': 'ProcessingStartTime',
+                                                                'stop': 'ProcessingEndTime'},
+                                                   'operation': 'RetortId',
+                                                   'object_id': 'MaterialName'}
+                                              }}
 
     table_obj_processing = pd.DataFrame()
     for o in obj_processing_metadata.keys():
@@ -376,76 +374,75 @@ def create_object_processing_table(tables):
     return tables
 
 
-
 if __name__ == '__main__':
     path_output_tables = os.path.normpath(os.environ['PATHOUTPUTTABLES'])
     project_path = os.path.normpath(os.environ['PROJECTPATH'])
     project_name = os.environ['PROJECTNAME']
     model_name = os.environ['MODELNAME']
 
-    output_tables = OutputTables(path_to_project = project_path,
-                                 model_file_name = project_name,
-                                 model_name = model_name)
-    output_tables.load_output_tables()
+    output_tables_ = OutputTables(path_to_project=project_path,
+                                  model_file_name=project_name,
+                                  model_name=model_name)
+    output_tables_.load_output_tables()
 
     print('Time Series plots')
-    x_axis = 'ObjectId'
-    y_axis = 'Utilization'
-    time_axis = 'DateTime'
+    y_axis_ = 'Utilization'
+    time_axis_ = 'DateTime'
     simio_time_series_plotter = SimioTimeSeries(
-                      output_tables=output_tables.tables,
-                      logger_level = logging.INFO,
-                      y_axis= y_axis,
-                      time_axis=time_axis)
+        output_tables=output_tables_.tables,
+        logger_level=logging.INFO,
+        y_axis=y_axis_,
+        time_axis=time_axis_)
 
     simio_time_series_plotter.plot(tables='OutputObjectUtilization', kind='time_series_columns')
 
     simio_time_series_plotter.time_axis = 'StatusDate'
     simio_time_series_plotter.y_axis = 'Count'
-    simio_time_series_plotter.plot(tables=['OutputStatus5A', 'OutputStatus5B', 'OutputStatus6'], kind='time_series_tables')
+    simio_time_series_plotter.plot(tables=['OutputStatus5A', 'OutputStatus5B', 'OutputStatus6'],
+                                   kind='time_series_tables')
     #
     print('Object Utilization plots')
-    x_axis = 'ObjectId'
-    y_axis = 'Utilization'
-    time_axis = 'DateTime'
-    object_groups_dict = {'Shuttles': ['DropOffShuttle[1]', 'PickUpShuttle[1]'],
-                          'Retorts': ['Retort1', 'Retort2', 'Retort3', 'Retort4',
-                                      'Retort5', 'Retort6', 'Retort7', 'Retort8',
-                                      'Retort9', 'Retort10']
-                          }
+    x_axis_ = 'ObjectId'
+    y_axis_ = 'Utilization'
+    time_axis_ = 'DateTime'
+    object_groups_dict_ = {'Shuttles': ['DropOffShuttle[1]', 'PickUpShuttle[1]'],
+                           'Retorts': ['Retort1', 'Retort2', 'Retort3', 'Retort4',
+                                       'Retort5', 'Retort6', 'Retort7', 'Retort8',
+                                       'Retort9', 'Retort10']
+                           }
     simio_obj_util_plotter = SimioBarPie(
-                      output_tables=output_tables.tables,
-                      logger_level = logging.INFO,
-                      x_axis = x_axis,
-                      y_axis = y_axis,
-                      time_axis = time_axis,
-                      objects_dict = object_groups_dict)
+        output_tables=output_tables_.tables,
+        logger_level=logging.INFO,
+        x_axis=x_axis_,
+        y_axis=y_axis_,
+        time_axis=time_axis_,
+        objects_dict=object_groups_dict_)
 
     simio_obj_util_plotter.plot(tables='OutputObjectUtilization', kind='bars_plot')
     simio_obj_util_plotter.plot(tables='OutputObjectUtilization', kind='pie_plot')
     simio_obj_util_plotter.plot(tables='OutputObjectUtilization', kind='bars_time_series_plot')
 
     print('TIS plot')
-    x_axis = 'ProcessName'
-    y_axis = 'ProductTimeInSystem'
+    x_axis_ = 'ProcessName'
+    y_axis_ = 'ProductTimeInSystem'
     simio_tis_plotter = SimioBox(
-        output_tables=output_tables.tables,
+        output_tables=output_tables_.tables,
         logger_level=logging.INFO,
-        y_axis=y_axis,
-        x_axis=x_axis)
+        y_axis=y_axis_,
+        x_axis=x_axis_)
 
     simio_tis_plotter.plot(tables='OutputProductDeparture', kind='box_plot')
 
-    print('Plot Object Processings on stacked bars')
+    print('Plot Object Processing on stacked bars')
     print('Create Object Processing Table')
-    output_tables_new = create_object_processing_table(output_tables)
-    x_axis = 'object_id'
-    y_axis = 'duration'
+    output_tables_new_ = create_object_processing_table(output_tables_)
+    x_axis_ = 'object_id'
+    y_axis_ = 'duration'
     operations_id = 'operation'
     simio_object_processing_plotter = SimioStackedBars(
-                      output_tables=output_tables.tables,
-                      logger_level = logging.INFO,
-                      x_axis = x_axis,
-                      y_axis = y_axis,
-                      legend_col = operations_id)
+        output_tables=output_tables_new_.tables,
+        logger_level=logging.INFO,
+        x_axis=x_axis_,
+        y_axis=y_axis_,
+        legend_col=operations_id)
     simio_object_processing_plotter.plot(tables='ObjectProcessingTable', kind='stacked_bars')
