@@ -205,11 +205,4 @@ class OutputTables:
 
 
 if __name__ == '__main__':
-    env_project_path = os.environ['SIMIOPROJECTPATH']
-    env_project_file = os.environ['SIMIOPROJECTNAME']
-    env_model_name = os.environ['MODELNAME']
-    env_export_dir = os.environ['EXPORTDIR']
-    output_tables = OutputTables(path_to_project=env_project_path,
-                                 model_file_name=env_project_file,
-                                 model_name=env_model_name)
-    output_tables.load_output_tables()
+    pass
