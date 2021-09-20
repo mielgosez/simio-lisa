@@ -15,6 +15,15 @@ simio_data_types = {
     'IntegerState': int}
 
 
+sql_data_types = {
+    str: 'VARCHAR(256)',
+    datetime.datetime: 'TIMESTAMP',
+    float: 'REAL',
+    bool: 'BIT',
+    int: 'INTEGER'
+}
+
+
 def get_project_folder_name(project_file_name: str) -> str:
     """
     Get the name of a folder associated with a project.

@@ -1,4 +1,3 @@
-import datetime
 import os
 import pandas as pd
 from simio_lisa.utils import *
@@ -9,15 +8,23 @@ class OutputTable:
     def __init__(self, model_metadata, table_path: str):
         self.__model_metadata = model_metadata
         self.__table_path = table_path
-        self.__table_schema = self.load_schema(self.__model_metadata)
+        self.__table_schema = self.load_schema()
+        self.__table_ddl = self.create_table_ddl()
 
-    def load_schema(self, model_metadata):
+    def create_table_ddl(self):
+        table_name = self.table_path.split(os.sep)[-1].split('.')[0]
+        ddl_table = f'CREATE TABLE {table_name} ('
+        for col, data_type in self.table_schema.items():
+            ddl_table += f'\n\t{col} {sql_data_types[data_type]},'
+        ddl_table += '\b\n);'
+        return ddl_table
+
+    def load_schema(self):
         """
         Load data types of columns.
-        :param model_metadata:
         :return: Dictionary mapping column name -> data type
         """
-        list_tables = extract_list_from_dom(dom_object=model_metadata, tag_name='Table')
+        list_tables = extract_list_from_dom(dom_object=self.model_metadata, tag_name='Table')
         attribute_value = self.table_path.split(os.path.sep)[-1].split('.')[0]
         dom_tables = filter_dom_by_attribute(list_of_doms=list_tables,
                                              attribute_name='Name',
@@ -123,6 +130,10 @@ class OutputTable:
         self.__model_metadata = model_metadata
 
     @property
+    def table_ddl(self):
+        return self.__table_ddl
+
+    @property
     def table_path(self):
         return self.__table_path
 
@@ -152,6 +163,7 @@ class OutputTables:
                                                    model_name=model_name)
         self.__output_file_list = get_output_table_names(output_table_path=self.__tables_path)
         self.__tables = None
+        self.__tables_schema = None
 
     def load_output_tables(self):
         """
@@ -159,14 +171,26 @@ class OutputTables:
             :return: Dictionary whose keys are experiment name and value is a data frame (or None).
             """
         experiment_dictionary = dict()
+        schema_list = list()
         for _table_name in self.output_file_list:
             table_path = os.path.join(self.tables_path, _table_name)
             output_table = OutputTable(model_metadata=self.model_metadata,
                                        table_path=table_path)
             experiment_dictionary[_table_name.split('.')[0]] = output_table.load_single_output_table()
+            schema_list.append(output_table.table_ddl)
         self.tables = experiment_dictionary
+        self.tables_schema = '\n'.join(schema_list)
 
     # Getters and Setters
+    @property
+    def tables_schema(self):
+        return self.__tables_schema
+
+    @tables_schema.setter
+    def tables_schema(self,
+                      new_tables_schema):
+        self.__tables_schema = new_tables_schema
+
     @property
     def model_metadata(self):
         return self.__model_metadata
