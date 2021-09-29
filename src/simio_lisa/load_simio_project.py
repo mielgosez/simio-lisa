@@ -169,6 +169,16 @@ def get_output_table_names(output_table_path: str):
     output_table = [item for item in all_table_names if item.startswith('Output')]
     return output_table
 
+def get_input_table_names(input_table_path: str):
+    """
+        List of output table names names.
+        :param output_table_path: path to Simio project.
+        :return: List of output table names.
+    """
+
+    all_table_names = os.listdir(input_table_path)
+    input_table = [item for item in all_table_names if 'Output' not in item]
+    return input_table
 
 def get_model_tables_path(project_path, model_name, project_filename):
     folder_name = get_project_folder_name(project_file_name=project_filename)
@@ -187,3 +197,4 @@ if __name__ == '__main__':
                                              project_filename=env_project_file,
                                              model_name=env_model_name,
                                              agg_function=np.mean)
+
