@@ -1,26 +1,35 @@
 import os
 import logging
 from simio_lisa.simio_plots import SimioTimeSeries, SimioBarPie, SimioBox, SimioStackedBars
-from simio_lisa.output_tables import OutputTables
+from simio_lisa.simio_tables import SimioTables
 
 
 def import_output_tables():
     env_project_path = os.environ['SIMIOPROJECTPATH']
     env_project_file = os.environ['SIMIOPROJECTNAME']
     env_model_name = os.environ['MODELNAME']
-    output_tables = OutputTables(path_to_project=env_project_path,
-                                 model_file_name=env_project_file,
-                                 model_name=env_model_name)
+    output_tables = SimioTables(path_to_project=env_project_path,
+                                model_file_name=env_project_file,
+                                model_name=env_model_name)
     output_tables.load_output_tables()
     return output_tables
 
+def import_input_tables():
+    env_project_path = os.environ['SIMIOPROJECTPATH']
+    env_project_file = os.environ['SIMIOPROJECTNAME']
+    env_model_name = os.environ['MODELNAME']
+    input_tables = SimioTables(path_to_project=env_project_path,
+                                model_file_name=env_project_file,
+                                model_name=env_model_name)
+    input_tables.load_input_tables()
+    return input_tables
 
 def test_smoke_time_series():
     output_tables = import_output_tables()
     y_axis = 'Utilization'
     time_axis = 'DateTime'
     simio_time_series_plotter = SimioTimeSeries(
-                      output_tables=output_tables.tables,
+                      output_tables=output_tables.output_tables,
                       logger_level=logging.INFO,
                       y_axis=y_axis,
                       time_axis=time_axis)
@@ -44,7 +53,7 @@ def test_smoke_bar_and_pie_charts():
                                       'Retort9', 'Retort10']
                           }
     simio_obj_util_plotter = SimioBarPie(
-        output_tables=output_tables.tables,
+        output_tables=output_tables.output_tables,
         logger_level=logging.INFO,
         x_axis=x_axis,
         y_axis=y_axis,
@@ -61,7 +70,7 @@ def test_smoke_box_plot():
     x_axis = 'ProcessName'
     y_axis = 'ProductTimeInSystem'
     simio_tis_plotter = SimioBox(
-        output_tables=output_tables.tables,
+        output_tables=output_tables.output_tables,
         logger_level=logging.INFO,
         y_axis=y_axis,
         x_axis=x_axis)
@@ -76,7 +85,7 @@ def _test_smoke_stack_bar():
     y_axis = 'Duration'
     legend_col = 'OperationID'
     simio_object_processing_plotter = SimioStackedBars(
-        output_tables=output_tables.tables,
+        output_tables=output_tables.output_tables,
         logger_level=logging.INFO,
         x_axis=x_axis,
         y_axis=y_axis,
