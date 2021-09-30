@@ -12,7 +12,29 @@ simio_data_types = {
     'DiscreteState': float,
     'BooleanState': bool,
     'ElementReferenceState': str,
-    'IntegerState': int}
+    'IntegerState': int,
+    'DynamicObjectInstanceProperty': str,
+    'DateTimeProperty': datetime.datetime,
+    'RealProperty': float,
+    'NodeProperty': str,
+    'ExpressionProperty': str,
+    'ObjectInstanceProperty': str,
+    'ObjectTypeProperty': str,
+    'BooleanProperty': bool,
+    'TransporterProperty': str,
+    'EventProperty': str,
+    'ElementProperty': str,
+    'ScheduleProperty': str,
+    'ForeignKeyProperty': str,
+                    }
+
+sql_data_types = {
+    str: 'VARCHAR(256)',
+    datetime.datetime: 'TIMESTAMP',
+    float: 'REAL',
+    bool: 'BIT',
+    int: 'INTEGER'
+}
 
 
 def get_project_folder_name(project_file_name: str) -> str:
