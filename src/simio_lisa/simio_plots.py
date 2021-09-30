@@ -1,4 +1,4 @@
-from simio_lisa.output_tables import *
+from simio_lisa.simio_tables import *
 import logging
 import pandas as pd
 import os
@@ -362,7 +362,7 @@ def create_object_processing_table(tables):
     table_obj_processing = pd.DataFrame()
     for o in obj_processing_metadata.keys():
         metadata = obj_processing_metadata[o]
-        table_aux = tables.tables[metadata['table']]
+        table_aux = tables.output_tables[metadata['table']]
         table_aux['duration'] = (table_aux[metadata['columns']['duration']['stop']] - table_aux[
             metadata['columns']['duration']['start']]).dt.total_seconds()
         table_aux = table_aux[['duration', metadata['columns']['operation'], metadata['columns']['object_id']]]
@@ -370,7 +370,7 @@ def create_object_processing_table(tables):
             columns={metadata['columns']['operation']: 'operation', metadata['columns']['object_id']: 'object_id'},
             inplace=True)
         table_obj_processing = table_obj_processing.append(table_aux, ignore_index=True)
-    tables.tables['ObjectProcessingTable'] = table_obj_processing
+    tables.output_tables['ObjectProcessingTable'] = table_obj_processing
     return tables
 
 
@@ -380,17 +380,17 @@ if __name__ == '__main__':
     project_name = os.environ['PROJECTNAME']
     model_name = os.environ['MODELNAME']
 
-    output_tables_ = OutputTables(path_to_project=project_path,
-                                  model_file_name=project_name,
-                                  model_name=model_name)
-    output_tables_.load_output_tables()
+    simio_tables_ = SimioTables(path_to_project=project_path,
+                                model_file_name=project_name,
+                                model_name=model_name)
+    simio_tables_.load_output_tables()
     print('Create Object Processing Table')
-    output_tables_new_ = create_object_processing_table(output_tables_)
+    output_tables_new_ = create_object_processing_table(simio_tables_)
     x_axis_ = 'object_id'
     y_axis_ = 'duration'
     operations_id = 'operation'
     simio_object_processing_plotter = SimioStackedBars(
-        output_tables=output_tables_new_.tables,
+        output_tables=output_tables_new_.output_tables,
         logger_level=logging.INFO,
         x_axis=x_axis_,
         y_axis=y_axis_,

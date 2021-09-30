@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setuptools.setup(
     name="simio_lisa",
-    version="1.1.1",
+    version="2.0.0",
     author="Jose Mielgo, Alessandro Seri",
     author_email="mielgosez@gmail.com, seri.alessandro@gmail.com",
     description="Beautiful Simio: Importing data and powering viz.",
